@@ -190,8 +190,12 @@ func decodeRelationship(buf []byte) (model.Relationship, error) {
 	if err != nil {
 		return model.Relationship{}, err
 	}
+	contState, err := safeUint8(w.Continuity.State)
+	if err != nil {
+		return model.Relationship{}, fmt.Errorf("decode relationship %s continuity: %w", id, err)
+	}
 	var cont model.Continuity
-	switch model.ContinuityState(w.Continuity.State) {
+	switch model.ContinuityState(contState) {
 	case model.ContinuityContinuous:
 		cont = model.NewContinuous()
 	case model.ContinuityGapped:
@@ -221,8 +225,25 @@ func decodeRelationship(buf []byte) (model.Relationship, error) {
 		}
 		opts.Sources = append(opts.Sources, sid)
 	}
+	rtVal, err := safeUint8(w.Type)
+	if err != nil {
+		return model.Relationship{}, fmt.Errorf("decode relationship %s type: %w", id, err)
+	}
+	cVal, err := safeUint8(w.Certainty)
+	if err != nil {
+		return model.Relationship{}, fmt.Errorf("decode relationship %s certainty: %w", id, err)
+	}
 	return model.NewRelationship(id, from, to,
-		model.RelationshipType(w.Type), model.Certainty(w.Certainty), cont, opts)
+		model.RelationshipType(rtVal), model.Certainty(cVal), cont, opts)
+}
+
+// safeUint8 narrows a wire int into a uint8 used by the model
+// enums, refusing values outside the uint8 range.
+func safeUint8(v int) (uint8, error) {
+	if v < 0 || v > 255 {
+		return 0, fmt.Errorf("value %d out of uint8 range", v)
+	}
+	return uint8(v), nil
 }
 
 // ---------- Source ----------
@@ -358,16 +379,32 @@ func decodeProposal(buf []byte) (model.Proposal, error) {
 		}
 		opts.Sources = append(opts.Sources, sid)
 	}
+	actionVal, err := safeUint8(w.Action)
+	if err != nil {
+		return model.Proposal{}, fmt.Errorf("decode proposal %s action: %w", id, err)
+	}
+	kindVal, err := safeUint8(w.EntityKind)
+	if err != nil {
+		return model.Proposal{}, fmt.Errorf("decode proposal %s entity kind: %w", id, err)
+	}
 	p, err := model.NewProposal(id,
-		model.ProposalAction(w.Action), model.EntityKind(w.EntityKind), opts)
+		model.ProposalAction(actionVal), model.EntityKind(kindVal), opts)
 	if err != nil {
 		return model.Proposal{}, err
 	}
 	// Replay history to reach the persisted state.
 	for _, h := range w.History {
-		p = p.WithStateUnchecked(model.ProposalState(h.To), model.ProposalTransition{
-			From:      model.ProposalState(h.From),
-			To:        model.ProposalState(h.To),
+		fromVal, err := safeUint8(h.From)
+		if err != nil {
+			return model.Proposal{}, fmt.Errorf("decode proposal %s history.from: %w", id, err)
+		}
+		toVal, err := safeUint8(h.To)
+		if err != nil {
+			return model.Proposal{}, fmt.Errorf("decode proposal %s history.to: %w", id, err)
+		}
+		p = p.WithStateUnchecked(model.ProposalState(toVal), model.ProposalTransition{
+			From:      model.ProposalState(fromVal),
+			To:        model.ProposalState(toVal),
 			Actor:     h.Actor,
 			Timestamp: h.Timestamp,
 			Reason:    h.Reason,
@@ -379,9 +416,13 @@ func decodeProposal(buf []byte) (model.Proposal, error) {
 	// history entry — we trust persisted state as the source of
 	// truth.
 	if int(p.State()) != w.State {
-		p = p.WithStateUnchecked(model.ProposalState(w.State), model.ProposalTransition{
+		stateVal, err := safeUint8(w.State)
+		if err != nil {
+			return model.Proposal{}, fmt.Errorf("decode proposal %s state: %w", id, err)
+		}
+		p = p.WithStateUnchecked(model.ProposalState(stateVal), model.ProposalTransition{
 			From: p.State(),
-			To:   model.ProposalState(w.State),
+			To:   model.ProposalState(stateVal),
 		})
 	}
 	return p, nil

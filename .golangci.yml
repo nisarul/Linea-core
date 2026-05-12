@@ -20,6 +20,7 @@ linters:
     gosec:
       excludes:
         - G104 # errcheck handles this
+        - G404 # math/rand is fine in tests; we never use it for crypto
     revive:
       rules:
         - name: exported
@@ -28,3 +29,19 @@ linters:
   exclusions:
     paths:
       - specs
+    rules:
+      # Tests routinely defer Close() on a value the test no longer
+      # cares about; insisting on err handling there adds noise
+      # without finding bugs.
+      - path: _test\.go
+        linters:
+          - errcheck
+          - gocritic
+          - gosec
+      # storetest is a test-helper package consumed only by adapter
+      # tests; same rationale as `_test.go` files above.
+      - path: store/storetest/
+        linters:
+          - errcheck
+          - gocritic
+          - gosec

@@ -30,7 +30,7 @@ func newWriteTx(base *state) *writeTx {
 		srcOver:    make(map[model.ID]*model.Source),
 		propOver:   make(map[model.ID]*model.Proposal),
 	}
-	tx.readTx.state = base
+	tx.state = base
 	return tx
 }
 

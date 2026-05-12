@@ -233,13 +233,9 @@ func NearestKnownCommonAncestor(
 		if !ok {
 			continue
 		}
-		// Skip if either endpoint is one of the queried persons
-		// AND distance is zero — the NKCA must not be a or b
-		// themselves unless they actually are an ancestor of the
-		// other (i.e. one is the other's direct ancestor).
-		if (id == a && eb.dist == 0) || (id == b && ea.dist == 0) {
-			// Allow: it means a is an ancestor of b (or vice versa).
-		}
+		// Note: id == a with eb.dist == 0 means a is an ancestor of b
+		// (and symmetrically). That outcome is desired — we keep the
+		// candidate so the caller learns about the direct lineage.
 		total := ea.dist + eb.dist
 		combined := ea.cert.Min(eb.cert)
 		anc, err := rtx.GetPerson(id)

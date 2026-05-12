@@ -13,14 +13,13 @@ import (
 // new Persons via NewPerson or NewUnknownAncestor; do not build
 // the struct literally outside the package.
 type Person struct {
-	id        ID
-	names     []Name
-	gender    Gender
-	birth     TimeRange
-	death     TimeRange
-	notes     string
-	unknown   bool // true => unknown-ancestor placeholder (CCGGS §5.3)
-	createdAt int64
+	id      ID
+	names   []Name
+	gender  Gender
+	birth   TimeRange
+	death   TimeRange
+	notes   string
+	unknown bool // true => unknown-ancestor placeholder (CCGGS §5.3)
 }
 
 // PersonOptions carries optional fields for constructing a Person.
