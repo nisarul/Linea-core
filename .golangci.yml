@@ -16,17 +16,15 @@ linters:
     - gocritic
     - revive
     - gosec
-
-linters-settings:
-  gosec:
-    excludes:
-      - G104 # errcheck handles this
-  revive:
-    rules:
-      - name: exported
-        severity: warning
-        disabled: false
-
-issues:
-  exclude-dirs:
-    - specs
+  settings:
+    gosec:
+      excludes:
+        - G104 # errcheck handles this
+    revive:
+      rules:
+        - name: exported
+          severity: warning
+          disabled: false
+  exclusions:
+    paths:
+      - specs
