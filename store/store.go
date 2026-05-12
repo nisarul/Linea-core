@@ -112,6 +112,9 @@ type ReadTx interface {
 	// IterateRelationships yields every Relationship in the graph.
 	IterateRelationships(yield func(model.Relationship) bool) error
 
+	// IterateSources yields every Source in the graph.
+	IterateSources(yield func(model.Source) bool) error
+
 	// IterateProposals yields every Proposal regardless of state.
 	IterateProposals(yield func(model.Proposal) bool) error
 

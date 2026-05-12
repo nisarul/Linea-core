@@ -109,6 +109,15 @@ func (r *readTx) IterateRelationships(yield func(model.Relationship) bool) error
 	return nil
 }
 
+func (r *readTx) IterateSources(yield func(model.Source) bool) error {
+	for _, s := range r.state.sources {
+		if !yield(s) {
+			return nil
+		}
+	}
+	return nil
+}
+
 func (r *readTx) IterateProposals(yield func(model.Proposal) bool) error {
 	for _, p := range r.state.proposals {
 		if !yield(p) {

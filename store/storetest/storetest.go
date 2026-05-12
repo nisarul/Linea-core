@@ -48,6 +48,7 @@ func Run(t *testing.T, factory Factory) {
 		{"IteratorEarlyTermination", testIteratorEarlyTerm},
 		{"ParentChildIteration", testParentChildIteration},
 		{"MarriageIteration", testMarriageIteration},
+		{"SourceIteration", testSourceIteration},
 		{"RollbackOnError", testRollback},
 		{"TerminalProposalImmutable", testTerminalProposal},
 	}
@@ -369,6 +370,30 @@ func testMarriageIteration(t *testing.T, s store.Store) {
 		return true
 	}))
 	require.ElementsMatch(t, []model.ID{b.ID(), c.ID()}, partners)
+}
+
+func testSourceIteration(t *testing.T, s store.Store) {
+	a := mustSource(t)
+	b := mustSource(t)
+	c := mustSource(t)
+	_, err := s.Update(ctx(), func(tx store.WriteTx) error {
+		for _, src := range []model.Source{a, b, c} {
+			if err := tx.PutSource(src); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	require.NoError(t, err)
+
+	rtx, _ := s.View(ctx())
+	defer rtx.Close()
+	var ids []model.ID
+	require.NoError(t, rtx.IterateSources(func(src model.Source) bool {
+		ids = append(ids, src.ID())
+		return true
+	}))
+	require.ElementsMatch(t, []model.ID{a.ID(), b.ID(), c.ID()}, ids)
 }
 
 func testRollback(t *testing.T, s store.Store) {

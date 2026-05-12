@@ -169,6 +169,10 @@ func (r *readTx) IterateRelationships(yield func(model.Relationship) bool) error
 	return scanByPrefix(r.tx, []byte{prefixRel, sep}, decodeRelationship, yield)
 }
 
+func (r *readTx) IterateSources(yield func(model.Source) bool) error {
+	return scanByPrefix(r.tx, []byte{prefixSource, sep}, decodeSource, yield)
+}
+
 func (r *readTx) IterateProposals(yield func(model.Proposal) bool) error {
 	return scanByPrefix(r.tx, []byte{prefixProposal, sep}, decodeProposal, yield)
 }
