@@ -1,0 +1,28 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+
+# Test
+*.test
+*.out
+coverage
+coverage.out
+coverage.html
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local Badger data dirs used by tests/dev
+testdata/badger/
+*.badger/
